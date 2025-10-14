@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="yanisae.github.io/grid.css">
+    <link rel="stylesheet" href="yanisae.github.io/style.css">
+
+    <title>Basic page layout</title>
+
+</head>
+<body> 
+    <div class="container">
+        <header>
+            <h1>Wake Up Philippines!</h1>
+        </header>
+        <main>
+            <section class="left">
+                <h3>Recent Events</h3>
+                <div style="margin-bottom: 1em;"></div>
+                <ul>
+                    <li>
+                        <a href="https://youtu.be/GzasN95o334?si=TTaK9-rpaogFzKjs">
+                            <img src="https://img.youtube.com/vi/GzasN95o334/0.jpg" alt="Contraversial interview of the Discayas" style="width:60px; vertical-align:middle; margin-right:8px;">
+                            Contraversial interview of the Discayas
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://youtu.be/NJvMPV1UudM?si=dS8eIOunNpVv3xti">
+                            <img src="https://img.youtube.com/vi/NJvMPV1UudM/0.jpg" alt="Maris Racal protests" style="width:100px; vertical-align:middle; margin-right:8px;">
+                            Maris Racal protests
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://youtu.be/gh2q34YSh9s?si=sutfvc-ql-pgTcG9">
+                            <img src="https://img.youtube.com/vi/gh2q34YSh9s/0.jpg" alt="Mendiola Rally Erupts" style="width:60px; vertical-align:middle; margin-right:8px;">
+                            Mendiola Rally Erupts
+                        </a>
+                    </li>
+                </ul>
+               
+            </section>
+            <section class="mid">
+                <h2>Ghost Projects of Discayas</h2>
+                <p>The Philippines is greatly affected whenever typhoons enter the country. A recent example was Typhoon “Pepito,” which caused massive damage in Pampanga, Antipolo, and several parts of Bulacan. Lives were lost, homes and infrastructure were destroyed, and in Manila, many roads became flooded and impassable. I even saw children swimming in dirty water, despite the risks. linebreak</p>
+             
+                <br>
+                    <p>As someone from Bulacan who had never experienced floods before, I was suddenly forced to walk through waist-deep water. It was dangerous—I could have been infected with leptospirosis or even fallen into an open manhole. Along the way, I saw men carrying their loved ones just to get across. I myself was stranded, but eventually decided to bravely walk to my dorm. Thankfully, a bus driver also risked the flood to bring passengers safely to their destinations.
+                <br>
+                <br>
+                    During the State of the Nation Address at Batasang Pambansa, the president tackled issues such as government funds and anomalies. One part struck me deeply. He named several contractors allegedly involved in irregularities surrounding flood control projects:  
+                <ul>
+      <li>Legacy Construction Corporation</li>
+      <li>Alpha and Omega Gen Contractor and Development Corp.</li>
+      <li>St. Timothy Construction Corporation</li>
+      <li>Road Edge Trading and Development Services</li>
+    </ul>
+    </p>
+    <div style="margin-bottom: 1em;"></div>
+            <style>
+                .mid ul {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    padding-left: 0;
+                    list-style-position: inside;
+                }
+                .mid ul li {
+                    text-align: center;
+                    width: 100%;
+                }
+            </style>
+            </section>
+            <!-- 3rd column removed -->
+        <style>
+            .mid {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 3em;
+            box-sizing: border-box;
+            }
+            .mid h2, .mid p, .mid ul {
+            text-align: left;
+            }
+            .mid ul {
+            display: block;
+            padding-left: 2em;
+            list-style-position: outside;
+            }
+            .mid ul li {
+            text-align: left;
+            width: auto;
+            }
+        </style>
+        </main>
+        <footer>
+            <p>This is the footer area where the contact details are usually placed.</p>
+        </footer>
+    </div>
+</body>
+</html>
