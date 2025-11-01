@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todo Task Manager</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #FFE5F0 0%, #FFF0F7 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script>
+    let tasks = [];
+    let editingTaskId = null;
+    let currentFilter = 'all';
+    let customCategories = [];
+    
+    const formData = {
+      title: '',
+      deadline: '',
+      category: '',
+      customCategory: '',
+      subject: '',
+      taskCategoryType: 'summatives',
+      status: 'starting'
+    };
+
+    function getGreeting() {
+      const now = new Date();
+      const phTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
+      const hour = phTime.getHours();
+      
+      if (hour < 12) {
+        return 'Good Morning!';
+      } else if (hour < 18) {
+        return 'Good Afternoon!';
+      } else {
+        return 'Good Evening!';
+      }
+    }
+
+    function handleInputChange(name, value) {
+      formData[name] = value;
+      render();
+    }
+
+    function handleCategoryChange(value) {
+      formData.category = value;
+      formData.customCategory = '';
+      formData.subject = '';
+      formData.taskCategoryType = 'summatives';
+      render();
+    }
+
+    function handleSubmit() {
+      const { title, deadline, category, customCategory, subject, taskCategoryType, status } = formData;
+
+      if (!title.trim()) {
+        alert('Please enter a task title');
+        return;
+      }
+      if (!deadline) {
+        alert('Please select a deadline');
+        return;
+      }
+      if (!category) {
+        alert('Please select a category');
+        return;
+      }
+
+      let finalCategory = category;
+
+      if (category === 'custom') {
+        const customCat = customCategory.trim();
+        if (!customCat) {
+          alert('Please enter a custom category name');
+          return;
+        }
+        
+        const existingCategory = customCategories.find(
+          cat => cat.toLowerCase() === customCat.toLowerCase()
+        );
+        
+        if (existingCategory) {
+          finalCategory = existingCategory;
+        } else {
+          finalCategory = customCat;
+          customCategories.push(customCat);
+        }
+      }
+
+      const task = {
+        id: editingTaskId || Date.now(),
+        title: title.trim(),
+        deadline,
+        category: finalCategory,
+        subject: category === 'college' ? subject : '',
+        taskCategoryType: category === 'college' ? taskCategoryType : '',
+        status
+      };
+
+      if (editingTaskId) {
+        tasks = tasks.map(t => t.id === editingTaskId ? task : t);
+        editingTaskId = null;
+      } else {
+        tasks.push(task);
+      }
+
+      resetForm();
+    }
+
+    function resetForm() {
+      formData.title = '';
+      formData.deadline = '';
+      formData.category = '';
+      formData.customCategory = '';
+      formData.subject = '';
+      formData.taskCategoryType = 'summatives';
+      formData.status = 'starting';
+      editingTaskId = null;
+      render();
+    }
+
+    function handleEdit(id) {
+      const task = tasks.find(t => t.id === id);
+      if (!task) return;
+
+      formData.title = task.title;
+      formData.deadline = task.deadline;
+      formData.category = task.category;
+      formData.customCategory = customCategories.includes(task.category) ? task.category : '';
+      formData.subject = task.subject || '';
+      formData.taskCategoryType = task.taskCategoryType || 'summatives';
+      formData.status = task.status;
+      editingTaskId = id;
+      render();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function handleDelete(id) {
+      if (confirm('Are you sure you want to delete this task?')) {
+        tasks = tasks.filter(t => t.id !== id);
+        render();
+      }
+    }
+
+    function formatDeadline(deadline) {
+      const date = new Date(deadline);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function getFilteredTasks() {
+      return tasks.filter(task => {
+        if (currentFilter === 'all') {
+          return task.status !== 'completed';
+        }
+        return task.status === currentFilter;
+      });
+    }
+
+    function render() {
+      const showCustomCategory = formData.category === 'custom';
+      const showCollegeFields = formData.category === 'college';
+      const filteredTasks = getFilteredTasks();
+
+      const app = document.getElementById('app');
+      app.innerHTML = `
+        <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden">
+          <!-- Header -->
+          <div class="text-white p-8" style="background: linear-gradient(135deg, #FF69B4 0%, #FF1493 100%);">
+            <h1 class="text-4xl font-bold mb-2">${getGreeting()}</h1>
+            <p style="opacity: 0.95;">Let's get moving!</p>
+          </div>
+
+          <!-- Form -->
+          <div class="p-8 border-b-2" style="background-color: #FFF5FA; border-color: #FFE5F0;">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div class="md:col-span-2">
+                <label class="block text-sm font-semibold mb-1" style="color: #D81B60;">
+                  Task Title *
+                </label>
+                <input
+                  type="text"
+                  id="title"
+                  value="${formData.title}"
+                  placeholder="Enter task title"
+                  class="w-full px-3 py-3 border-2 rounded-lg focus:outline-none transition"
+                  style="border-color: #FFB3D9;"
+                  onchange="handleInputChange('title', this.value)"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold mb-1" style="color: #D81B60;">
+                  Deadline *
+                </label>
+                <input
+                  type="datetime-local"
+                  id="deadline"
+                  value="${formData.deadline}"
+                  class="w-full px-3 py-3 border-2 rounded-lg focus:outline-none transition"
+                  style="border-color: #FFB3D9;"
+                  onchange="handleInputChange('deadline', this.value)"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold mb-1" style="color: #D81B60;">
+                  Category *
+                </label>
+                <select
+                  id="category"
+                  class="w-full px-3 py-3 border-2 rounded-lg focus:outline-none transition"
+                  style="border-color: #FFB3D9;"
+                  onchange="handleCategoryChange(this.value)"
+                >
+                  <option value="">Select category</option>
+                  <option value="college" ${formData.category === 'college' ? 'selected' : ''}>College</option>
+                  ${customCategories.map(cat => 
+                    `<option value="${cat}" ${formData.category === cat ? 'selected' : ''}>${cat}</option>`
+                  ).join('')}
+                  <option value="custom" ${formData.category === 'custom' ? 'selected' : ''}>+ Add Custom Category</option>
+                </select>
+              </div>
+
+              ${showCustomCategory ? `
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-semibold mb-1" style="color: #D81B60;">
+                    Custom Category
+                  </label>
+                  <input
+                    type="text"
+                    id="customCategory"
+                    value="${formData.customCategory}"
+                    placeholder="Enter custom category"
+                    class="w-full px-3 py-3 border-2 rounded-lg focus:outline-none transition"
+                    style="border-color: #FFB3D9;"
+                    onchange="handleInputChange('customCategory', this.value)"
+                  />
+                </div>
+              ` : ''}
+
+              ${showCollegeFields ? `
+                <div>
+                  <label class="block text-sm font-semibold mb-1" style="color: #D81B60;">
+                    Subject
+                  </label>
+                  <input
+                    type="text"
+                    id="subject"
+                    value="${formData.subject}"
+                    placeholder="Enter subject (e.g., Math, Science)"
+                    class="w-full px-3 py-3 border-2 rounded-lg focus:outline-none transition"
+                    style="border-color: #FFB3D9;"
+                    onchange="handleInputChange('subject', this.value)"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold mb-1" style="color: #D81B60;">
+                    Category of Task
+                  </label>
+                  <select
+                    id="taskCategoryType"
+                    class="w-full px-3 py-3 border-2 rounded-lg focus:outline-none transition"
+                    style="border-color: #FFB3D9;"
+                    onchange="handleInputChange('taskCategoryType', this.value)"
+                  >
+                    <option value="summatives" ${formData.taskCategoryType === 'summatives' ? 'selected' : ''}>Summatives</option>
+                    <option value="formatives" ${formData.taskCategoryType === 'formatives' ? 'selected' : ''}>Formatives</option>
+                    <option value="notetaking" ${formData.taskCategoryType === 'notetaking' ? 'selected' : ''}>Note taking</option>
+                    <option value="groupwork" ${formData.taskCategoryType === 'groupwork' ? 'selected' : ''}>Groupwork</option>
+                    <option value="technicalactivity" ${formData.taskCategoryType === 'technicalactivity' ? 'selected' : ''}>Technical Activity</option>
+                  </select>
+                </div>
+              ` : ''}
+
+              <div class="md:col-span-2">
+                <label class="block text-sm font-semibold mb-1" style="color: #D81B60;">
+                  Status *
+                </label>
+                <select
+                  id="status"
+                  class="w-full px-3 py-3 border-2 rounded-lg focus:outline-none transition"
+                  style="border-color: #FFB3D9;"
+                  onchange="handleInputChange('status', this.value)"
+                >
+                  <option value="starting" ${formData.status === 'starting' ? 'selected' : ''}>Starting</option>
+                  <option value="inprogress" ${formData.status === 'inprogress' ? 'selected' : ''}>In Progress</option>
+                  <option value="completed" ${formData.status === 'completed' ? 'selected' : ''}>Completed</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="flex gap-3">
+              <button
+                onclick="handleSubmit()"
+                class="flex-1 text-white py-3 px-6 rounded-lg font-semibold hover:-translate-y-0.5 hover:shadow-lg transition"
+                style="background-color: #FF69B4;"
+              >
+                ${editingTaskId ? 'Update Task' : 'Add Task'}
+              </button>
+              ${editingTaskId ? `
+                <button
+                  onclick="resetForm()"
+                  class="py-3 px-6 rounded-lg font-semibold transition"
+                  style="background-color: #FFB3D9; color: #D81B60;"
+                >
+                  Cancel
+                </button>
+              ` : ''}
+            </div>
+          </div>
+
+          <!-- Tasks List -->
+          <div class="p-8">
+            <div class="flex flex-wrap gap-2 mb-5">
+              ${['all', 'starting', 'inprogress', 'completed'].map(filter => `
+                <button
+                  onclick="currentFilter = '${filter}'; render();"
+                  class="px-4 py-2 rounded-full text-sm font-semibold transition"
+                  style="background-color: ${currentFilter === filter ? '#FF69B4' : '#FFE5F0'}; color: ${currentFilter === filter ? '#FFFFFF' : '#D81B60'};"
+                >
+                  ${filter === 'all' ? 'All Tasks' : 
+                    filter === 'starting' ? 'Starting' :
+                    filter === 'inprogress' ? 'In Progress' : 'Completed'}
+                </button>
+              `).join('')}
+            </div>
+
+            ${filteredTasks.length === 0 ? `
+              <div class="text-center py-16" style="color: #FF69B4;">
+                <svg class="w-24 h-24 mx-auto mb-4 opacity-30" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                  <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd" />
+                </svg>
+                <h2 class="text-xl font-semibold mb-2" style="color: #D81B60;">
+                  No tasks ${currentFilter !== 'all' ? 'in this category' : 'yet'}
+                </h2>
+                <p style="color: #FF69B4;">Add your first task to get started!</p>
+              </div>
+            ` : `
+              <div class="space-y-4">
+                ${filteredTasks.map(task => {
+                  const statusText = task.status === 'starting' ? 'Starting' :
+                                   task.status === 'inprogress' ? 'In Progress' : 'Completed';
+                  const categoryText = task.category.charAt(0).toUpperCase() + task.category.slice(1);
+
+                  return `
+                    <div class="bg-white rounded-xl p-5 hover:shadow-lg hover:-translate-y-0.5 transition" style="border: 2px solid #FFE5F0;">
+                      <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-semibold flex-1" style="color: #D81B60;">
+                          ${task.title}
+                        </h3>
+                        <div class="flex gap-2">
+                          <button
+                            onclick="handleEdit(${task.id})"
+                            class="text-white px-3 py-1.5 rounded text-sm font-semibold transition"
+                            style="background-color: #FF69B4;"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onclick="handleDelete(${task.id})"
+                            class="text-white px-3 py-1.5 rounded text-sm font-semibold transition"
+                            style="background-color: #FF1493;"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+
+                      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div>
+                          <div class="text-xs mb-1" style="color: #FF69B4;">Deadline</div>
+                          <div class="font-semibold" style="color: #D81B60;">
+                            ⏰ ${formatDeadline(task.deadline)}
+                          </div>
+                        </div>
+
+                        <div>
+                          <div class="text-xs mb-1" style="color: #FF69B4;">Category</div>
+                          <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold" style="background-color: ${task.category === 'college' ? '#FFE5F0' : '#FFD0E8'}; color: #D81B60;">
+                            ${categoryText}
+                          </span>
+                        </div>
+
+                        ${task.category === 'college' && task.subject ? `
+                          <div>
+                            <div class="text-xs mb-1" style="color: #FF69B4;">Subject</div>
+                            <div class="font-semibold" style="color: #D81B60;">
+                              📚 ${task.subject.charAt(0).toUpperCase() + task.subject.slice(1)}
+                            </div>
+                          </div>
+                        ` : ''}
+
+                        ${task.category === 'college' && task.taskCategoryType ? `
+                          <div>
+                            <div class="text-xs mb-1" style="color: #FF69B4;">Task Type</div>
+                            <div class="font-semibold" style="color: #D81B60;">
+                              📝 ${task.taskCategoryType.charAt(0).toUpperCase() + task.taskCategoryType.slice(1)}
+                            </div>
+                          </div>
+                        ` : ''}
+
+                        <div>
+                          <div class="text-xs mb-1" style="color: #FF69B4;">Status</div>
+                          <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold" style="background-color: ${task.status === 'starting' ? '#FFF3CD' : task.status === 'inprogress' ? '#FFE5F0' : '#D4EDDA'}; color: ${task.status === 'starting' ? '#856404' : task.status === 'inprogress' ? '#D81B60' : '#155724'};">
+                            ${statusText}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            `}
+          </div>
+        </div>
+      `;
+    }
+
+    // Initial render
+    render();
+  </script>
+</body>
+</html>
